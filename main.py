@@ -180,15 +180,17 @@ def findnearestCS(reqTime, reqX, reqY):
             tmp = tt
             ans = [i, tt, wt]
     return ans
-sams=[]
-waittime = []
+
+
+totalTime=[]
+waitTime = []
 distanceWise = []
 
 def solveRequests(pastData,noOfRequests,weightage):
  
     
-    global sams
-    global waittime
+    global totalTime
+    global waitTime
     global distanceWise
 
     for i in range(noOfRequests):
@@ -196,12 +198,12 @@ def solveRequests(pastData,noOfRequests,weightage):
         ind = optimalCS[0]
         tt =  optimalCS[1]
         wt = optimalCS[2]
-        txy = round(tt+wt,2)
+        totalTime1 = round(tt+wt,2)
         X = [randomX[i],randomY[i]]
         Y = [CSx[ind],CSy[ind]]
         distanceWise.append(distanceBetweenAB(X,Y))
-        waittime.append(wt)
-        sams.append(txy)
+        waitTime.append(wt)
+        totalTime.append(totalTime1)
         
 
 
@@ -227,8 +229,8 @@ makeStations(GridX,GridY,intervalOfChargingStations)
 # df.to_csv('All_Requests.csv', index = False)
 
 df2 = pd.DataFrame({'ChargingStationCode':ChargingStationCode})
-df2.to_csv('Hourly Data.csv',index=False)
-df2=pd.read_csv('Hourly Data.csv')
+df2.to_csv('datasetWithOptimization.csv',index=False)
+df2=pd.read_csv('datasetWithOptimization.csv')
 
 # for i in range(24):
 #         requests = vehicleDensity(i)
@@ -271,7 +273,7 @@ def generateHourlyData(day):
             makeZero(noOfCars)
             restart()
     makeZero(occupancyTime)
-    df2.to_csv('Hourly Data.csv',index=False)
+    df2.to_csv('datasetWithOptimization.csv',index=False)
 
 for i in range(10):
     generateHourlyData(i)
@@ -284,14 +286,14 @@ def initiliaze(requests):
         allocatedCS.append(0)
         arrivalTime.append(0)
 
-df2=pd.read_csv('Hourly Data.csv')
+df2=pd.read_csv('datasetWithOptimization.csv')
 df = pd.read_csv('randomData.csv')
 for x in range(24):
     requests = vehicleDensity(x)
     initiliaze(requests)
-    sams = []
+    totalTime = []
     
-    waittime =[]
+    waitTime =[]
     distanceWise=[]
     z='AverageTime'+str(x)+"(seconds)"
     pastData = df2[z].tolist()
@@ -303,15 +305,13 @@ for x in range(24):
     randomY = df[o].tolist()[:requests]
     solveRequests(pastData,requests,0.7)
     # print(len(sams), requests)
-    final_ans_waitTime.append(waittime)
+    final_ans_waitTime.append(waitTime)
     final_ans_distance.append(distanceWise)
-    final_ans.append(sams)
+    final_ans.append(totalTime)
     semifinalans = []
     allocatedCS = []
     arrivalTime = []
-    sams=[]
-    waittime =[]
-    distanceWise=[]
+    
     makeZero(averageActulTime)
     makeZero(noOfCars)
     restart()

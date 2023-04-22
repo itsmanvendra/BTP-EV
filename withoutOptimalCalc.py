@@ -154,21 +154,21 @@ def waitingTime(arrivalTime,currentOccupancyTime,pastComputedTime,weightage):
         currentWaitTime =  currentOccupancyTime - arrivalTime
         return currentWeightage * (currentWaitTime) + pastWeightage * (pastComputedTime)
 
-def findOptimalCS(pastData,weightage,reqTime,reqX,reqY):
-    A = [reqX,reqY]
-    tmp = sys.maxsize
-    ans = []
-    for i in range(numberOfChargingStations):
-        B = [CSx[i],CSy[i]]
-        c = distanceBetweenAB(A,B)
-        if c > 5000:
-            continue
-        tt = timeToTravel(A,B)
-        wt = waitingTime(reqTime + tt,occupancyTime[i],pastData[i],weightage)
-        if tt + wt < tmp:
-            ans = [i, tt, wt]
-            tmp = tt + wt
-    return ans
+# def findOptimalCS(pastData,weightage,reqTime,reqX,reqY):
+#     A = [reqX,reqY]
+#     tmp = sys.maxsize
+#     ans = []
+#     for i in range(numberOfChargingStations):
+#         B = [CSx[i],CSy[i]]
+#         c = distanceBetweenAB(A,B)
+#         if c > 5000:
+#             continue
+#         tt = timeToTravel(A,B)
+#         wt = waitingTime(reqTime + tt,occupancyTime[i],pastData[i],weightage)
+#         if tt + wt < tmp:
+#             ans = [i, tt, wt]
+#             tmp = tt + wt
+#     return ans
 
 
 def findnearestCS(reqTime, reqX, reqY):
@@ -189,7 +189,7 @@ totalTime=[]
 waitTime = []
 distanceWise = []
 
-def solveRequests(pastData,noOfRequests,weightage):
+def solveRequests(noOfRequests):
  
     
     global totalTime
@@ -197,10 +197,10 @@ def solveRequests(pastData,noOfRequests,weightage):
     global distanceWise
 
     for i in range(noOfRequests):
-        optimalCS = findOptimalCS(pastData,weightage,randomTime[i],randomX[i],randomY[i])
-        ind = optimalCS[0]
-        tt =  optimalCS[1]
-        wt = optimalCS[2]
+        nearestCS = findnearestCS(randomTime[i],randomX[i],randomY[i])
+        ind = nearestCS[0]
+        tt =  nearestCS[1]
+        wt = nearestCS[2]
         Z = [destX[i],destY[i]]
         
         
@@ -236,8 +236,8 @@ makeStations(GridX,GridY,intervalOfChargingStations)
 # df.to_csv('All_Requests.csv', index = False)
 
 df2 = pd.DataFrame({'ChargingStationCode':ChargingStationCode})
-df2.to_csv('datasetWithOptimization.csv',index=False)
-df2=pd.read_csv('datasetWithOptimization.csv')
+df2.to_csv('datasetWithoutOptimization.csv',index=False)
+df2=pd.read_csv('datasetWithoutOptimization.csv')
 
 # for i in range(24):
 #         requests = vehicleDensity(i)
@@ -250,40 +250,40 @@ df2=pd.read_csv('datasetWithOptimization.csv')
 #         restart()
 # df2.to_csv('Hourly Data.csv',index=False)
 
-def generateHourlyData(day):
+# def generateHourlyData(day):
 
-    if day==0:
-        for i in range(24):
-            requests = vehicleDensity(i)
-            generateRequest(startTime + (i*3600),GridX,GridY,requests)
-            pastData = [0] * 25
-            solveRequests(pastData,requests,day/10)
-            z='AverageTime'+str(i)+"(seconds)"
-            df2.insert(i+1,z,averageActulTime)
-            makeZero(averageActulTime)
-            makeZero(noOfCars)
-            restart()
+#     if day==0:
+#         for i in range(24):
+#             requests = vehicleDensity(i)
+#             generateRequest(startTime + (i*3600),GridX,GridY,requests)
+#             pastData = [0] * 25
+#             solveRequests(pastData,requests,day/10)
+#             z='AverageTime'+str(i)+"(seconds)"
+#             df2.insert(i+1,z,averageActulTime)
+#             makeZero(averageActulTime)
+#             makeZero(noOfCars)
+#             restart()
 
-    else:
-        if day >= 7:
-            day = 7
-        elif day >= 20:
-            day = 8
-        for i in range(24):
-            requests = vehicleDensity(i)
-            z='AverageTime'+str(i)+"(seconds)"
-            pastData = df2[z].tolist()
-            generateRequest(startTime + (i*3600),GridX,GridY,requests)
-            solveRequests(pastData,requests,day/10)
-            df2[z] = averageActulTime
-            makeZero(averageActulTime)
-            makeZero(noOfCars)
-            restart()
-    makeZero(occupancyTime)
-    df2.to_csv('datasetWithOptimization.csv',index=False)
+#     else:
+#         if day >= 7:
+#             day = 7
+#         elif day >= 20:
+#             day = 8
+#         for i in range(24):
+#             requests = vehicleDensity(i)
+#             z='AverageTime'+str(i)+"(seconds)"
+#             pastData = df2[z].tolist()
+#             generateRequest(startTime + (i*3600),GridX,GridY,requests)
+#             solveRequests(pastData,requests,day/10)
+#             df2[z] = averageActulTime
+#             makeZero(averageActulTime)
+#             makeZero(noOfCars)
+#             restart()
+#     makeZero(occupancyTime)
+#     df2.to_csv('datasetWithOptimization.csv',index=False)
 
-for i in range(10):
-    generateHourlyData(i)
+# for i in range(10):
+#     # generateHourlyData(i)
 
 
 
@@ -293,7 +293,7 @@ def initiliaze(requests):
         allocatedCS.append(0)
         arrivalTime.append(0)
 
-df2=pd.read_csv('datasetWithOptimization.csv')
+# df2=pd.read_csv('datasetWithoutOptimization.csv')
 df = pd.read_csv('newrandomdata.csv')
 for x in range(24):
     requests = vehicleDensity(x)
@@ -302,8 +302,8 @@ for x in range(24):
     
     waitTime =[]
     distanceWise=[]
-    z='AverageTime'+str(x)+"(seconds)"
-    pastData = df2[z].tolist()
+    # z='AverageTime'+str(x)+"(seconds)"
+    # pastData = df2[z].tolist()
     
     m = 'randomTime'+str(x)+'(seconds)'
     n = 'randomX'+str(x)+'(meters)'
@@ -322,7 +322,7 @@ for x in range(24):
     destX = df[s].tolist()[:requests]
     destY = df[t].tolist()[:requests]
     # print("hhi",randomY)
-    solveRequests(pastData,requests,0.7)
+    solveRequests(requests)
     # print(len(sams), requests)
     final_ans_waitTime.append(waitTime)
     final_ans_distance.append(distanceWise)
@@ -334,16 +334,16 @@ for x in range(24):
     makeZero(averageActulTime)
     makeZero(noOfCars)
     restart()
-df99 = pd.DataFrame({'withOptimization':final_ans})
-df99.to_csv('withOptimization.csv',index=False)
+df999 = pd.DataFrame({'withoutOptimization':final_ans})
+df999.to_csv('withoutOptimization.csv',index=False)
 # pprint("hhi",randomY)rint(randomY)
 # print("hhi")
 # print(randomY)
-df100 = pd.DataFrame({'withOptimizedDist':final_ans_distance})
-df100.to_csv('withOptimizedDist.csv',index=False)
+df969 = pd.DataFrame({'withoutOptimizedDist':final_ans_distance})
+df969.to_csv('withoutOptimizedDist.csv',index=False)
 
-df199 = pd.DataFrame({'withOptimizedTime':final_ans_waitTime})
-df199.to_csv('withOptimizedTime.csv',index=False)
+df1999 = pd.DataFrame({'withoutOptimizedTime':final_ans_waitTime})
+df1999.to_csv('withoutOptimizedTime.csv',index=False)
 # xxxx = final_ans[10]
 # xaxis = np.arange(0, len(xxxx), 1) 
 # plt.plot(xaxis, xxxx)

@@ -170,11 +170,11 @@ def waitingTime(arrivalTime,currentOccupancyTime,pastComputedTime,weightage):
         return currentWeightage * (currentWaitTime) + pastWeightage * (pastComputedTime)
 
 
-def findOptimalCS(pastData,weightage,reqTime,reqX,reqY, soc, batteryCapacityUser, ecrUser, desX, desY):
+def findOptimalCS(pastData,weightage,reqTime,reqX,reqY, soc, batteryCapacityUser, ecrUser):
     A = [reqX,reqY]
-    D = [desX,desY]
+    
     tmp = sys.maxsize
-    tempr = 0
+    
     ans = []
     for i in range(numberOfChargingStations):
         B = [CSx[i],CSy[i]]
@@ -183,20 +183,11 @@ def findOptimalCS(pastData,weightage,reqTime,reqX,reqY, soc, batteryCapacityUser
         d = computeSOC(soc,batteryCapacityUser,ecrUser)
         # print(d)
         if c < d:
-            distBD = distanceBetweenAB(B,D)
             tt = timeToTravel(A,B)
-            ttToDest = timeToTravel(D,B)
             wt = waitingTime(reqTime + tt,occupancyTime[i],pastData[i],weightage)
-            if tt + wt + ttToDest + 600 < tmp:
-                # print("tt",tt)
-                # print("wt",wt)
-                # print("tmp",tmp)
-                xdd = ((batteryCapacityUser/ecrUser)*1000 - distBD)**2/(tt+wt+ttToDest+600)
-                tmp = tt + wt + ttToDest + 600
-                if(tempr < xdd):
-                    tempr = xdd
-                    ans = [i, tt, wt,ttToDest, distBD]
-                
+            if tt + wt  < tmp:
+                ans = [i,tt,wt]
+                tmp = tt+wt
     return ans
 
 totalTime=[]
@@ -212,24 +203,25 @@ def solveRequests(pastData,noOfRequests,weightage):
     global distanceCSToDest
 
     for i in range(noOfRequests):
-        optimalCS = findOptimalCS(pastData,weightage,randomTime[i],randomX[i],randomY[i], soc[i], batteryCapacityUser[i], ecrUser[i], destX[i], destY[i])
+        optimalCS = findOptimalCS(pastData,weightage,randomTime[i],randomX[i],randomY[i], soc[i], batteryCapacityUser[i], ecrUser[i])
         ind = optimalCS[0]
         tt =  optimalCS[1]
         wt = optimalCS[2]
-        ttToDest = optimalCS[3]
-        distBD = optimalCS[4]
+        
         # if(i == 0 and randomTime[i] == 11 and randomX[i] == 7667 and randomY[i] == 3901):
         #     print("tt",tt)
         #     print("wt",wt)
         #     print("ttToDest",ttToDest)
         #     print("distBD",distBD)
         
-        totalTime1 = round(tt+wt+ttToDest+600,2)
+        
         
         X = [randomX[i],randomY[i]]
         Y = [CSx[ind],CSy[ind]]
-        
-        distanceWise.append(distanceBetweenAB(X,Y)+distBD)
+        Z = [destX[i],destY[i]]
+        timeToDest = timeToTravel(Z,Y)
+        totalTime1 = round(tt+wt+600+timeToDest,2)
+        distanceWise.append(distanceBetweenAB(X,Y)+distanceBetweenAB(Y,Z))
         waitTime.append(wt)
         totalTime.append(totalTime1)
         
@@ -244,9 +236,9 @@ def solveRequests(pastData,noOfRequests,weightage):
     
 makeStations(GridX,GridY,intervalOfChargingStations)
 
-df3 = pd.DataFrame({'ChargingStationCode':ChargingStationCode})
-df3.to_csv('datasetWithSOCOptimization.csv',index=False)
-df3=pd.read_csv('datasetWithSOCOptimization.csv')
+df669 = pd.DataFrame({'ChargingStationCode':ChargingStationCode})
+df669.to_csv('datasetWithOnlySOCOptimization.csv',index=False)
+df669=pd.read_csv('datasetWithOnlySOCOptimization.csv')
 
 def generateHourlyData(day):
 
@@ -257,7 +249,7 @@ def generateHourlyData(day):
             pastData = [0] * 25
             solveRequests(pastData,requests,day/10)
             z='AverageTime'+str(i)+"(seconds)"
-            df3.insert(i+1,z,averageActulTime)
+            df669.insert(i+1,z,averageActulTime)
             makeZero(averageActulTime)
             makeZero(noOfCars)
             restart()
@@ -270,15 +262,15 @@ def generateHourlyData(day):
         for i in range(24):
             requests = vehicleDensity(i)
             z='AverageTime'+str(i)+"(seconds)"
-            pastData = df3[z].tolist()
+            pastData = df669[z].tolist()
             generateRequest(startTime + (i*3600),GridX,GridY,requests)
             solveRequests(pastData,requests,day/10)
-            df3[z] = averageActulTime
+            df669[z] = averageActulTime
             makeZero(averageActulTime)
             makeZero(noOfCars)
             restart()
     makeZero(occupancyTime)
-    df3.to_csv('datasetWithSOCOptimization.csv',index=False)
+    df669.to_csv('datasetWithOnlySOCOptimization.csv',index=False)
 
 for i in range(10):
     print(i)
@@ -290,8 +282,8 @@ def initiliaze(requests):
         allocatedCS.append(0)
         arrivalTime.append(0)
 
-df69=pd.read_csv('datasetWithSOCOptimization.csv')
-df = pd.read_csv('newrandomdata.csv')
+df669=pd.read_csv('datasetWithOnlySOCOptimization.csv')
+df19 = pd.read_csv('newrandomdata.csv')
 for x in range(24):
     requests = vehicleDensity(x)
     initiliaze(requests)
@@ -300,7 +292,7 @@ for x in range(24):
     waitTime =[]
     distanceWise=[]
     z='AverageTime'+str(x)+"(seconds)"
-    pastData = df69[z].tolist()
+    pastData = df669[z].tolist()
     m = 'randomTime'+str(x)+'(seconds)'
     n = 'randomX'+str(x)+'(meters)'
     o = 'randomY'+str(x)+'(meters)'
@@ -309,14 +301,14 @@ for x in range(24):
     r = 'ecrUser'+str(x)+'(kwh/km)'
     s = 'destX'+str(x)+'(meters)'
     t = 'destY'+str(x)+'(meters)'
-    randomTime = df[m].tolist()[:requests]
-    randomX = df[n].tolist()[:requests]
-    randomY = df[o].tolist()[:requests]
-    soc = df[p].tolist()[:requests]
-    batteryCapacityUser = df[q].tolist()[:requests]
-    ecrUser = df[r].tolist()[:requests]
-    destX = df[s].tolist()[:requests]
-    destY = df[t].tolist()[:requests]
+    randomTime = df19[m].tolist()[:requests]
+    randomX = df19[n].tolist()[:requests]
+    randomY = df19[o].tolist()[:requests]
+    soc = df19[p].tolist()[:requests]
+    batteryCapacityUser = df19[q].tolist()[:requests]
+    ecrUser = df19[r].tolist()[:requests]
+    destX = df19[s].tolist()[:requests]
+    destY = df19[t].tolist()[:requests]
     # print("hhi",randomY)
     solveRequests(pastData,requests,0.7)
     # print(len(sams), requests)
@@ -337,19 +329,19 @@ for x in range(24):
     makeZero(noOfCars)
     restart()
 
-df10999 = pd.DataFrame({'withSOCOptimizedWaitTime':final_ans_waitTime})
-df10999.to_csv('withSOCOptimizedWaitTime.csv',index=False)
-df1098 = pd.DataFrame({'withSOCOptimizedTotalTime':final_ans})
-df1098.to_csv('withSOCOptimizedTotalTime.csv',index=False)
+df83 = pd.DataFrame({'withSOCOnlyOptimizedWaitTime':final_ans_waitTime})
+df83.to_csv('withSOCOnlyOptimizedWaitTime.csv',index=False)
+df27 = pd.DataFrame({'withSOCOnlyOptimizedTotalTime':final_ans})
+df27.to_csv('withSOCOnlyOptimizedTotalTime.csv',index=False)
 # pprint("hhi",randomY)rint(randomY)
 # print("hhi")
 # print(randomY)
-df1097 = pd.DataFrame({'withSOCOptimizedDist':final_ans_distance})
-df1097.to_csv('withSOCOptimizedDist.csv',index=False)
+df25 = pd.DataFrame({'withSOCOnlyOptimizedDist':final_ans_distance})
+df25.to_csv('withSOCOnlyOptimizedDist.csv',index=False)
 
 # df199 = pd.DataFrame({'withOptimizedTime':final_ans_waitTime})
 # df199.to_csv('withOptimizedTime.csv',index=False)
 # xxxx = final_ans[10]
 
-df103 = pd.DataFrame(list(zip(randomTime,randomX,randomY,soc,destX,destY,batteryCapacityUser,ecrUser,allocatedCS,arrivalTime)),columns=['randomTime','randomX','randomY','soc','destX','destY','batteryCapacityUser','ecrUser','allocatedCS','arrivalTime'])
-df103.to_csv('randomTime.csv',index=False)
+df113 = pd.DataFrame(list(zip(randomTime,randomX,randomY,soc,destX,destY,batteryCapacityUser,ecrUser,allocatedCS,arrivalTime)),columns=['randomTime','randomX','randomY','soc','destX','destY','batteryCapacityUser','ecrUser','allocatedCS','arrivalTime'])
+df113.to_csv('randomTime.csv',index=False)

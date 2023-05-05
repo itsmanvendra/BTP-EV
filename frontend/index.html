@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <h1 class="heading">Find Most Optimal Charging Station For Your EV</h1>
+    <div class="container">
+        <div class="form-container">
+            <form>
+                <div class="form-elements">
+                    <label for="userLocation">Enter Your Location:</label>
+                    <input type="text" name="userLocation" id="userLocation" value="(2.2, 3.4)" placeholder="(2.2, 3.4)" />
+                </div>
+                <div class="socAndTime">
+                    <div class="form-elements">
+                        <label for="userSoc">Soc:</label>
+                        <input type="text" name="userSoc" id="userSoc" value="0.05" placeholder="0.05"/>
+                    </div>
+                    <div class="form-elements">
+                        <label for="userTime">Time:</label>
+                        <input type="number" name="userTime" id="userTime" value="10" placeholder="1 (in hrs)"  />
+                    </div>
+                    
+                </div>
+                
+                <div class="form-elements">
+                    <label for="userBatteryCapacity">Battery Capacity:</label>
+                    <input type="text" name="userBatteryCapacity" id="userBatteryCapacity" value="22.5" placeholder="22.5 kwh" />
+                </div>
+                <div class="form-elements">
+                    <label for="userEnergyConsumptionRate">Energy Consumption Rate:</label>
+                    <input type="text" name="userEnergyConsumptionRate" id="userEnergyConsumptionRate" value="0.16" placeholder="0.16 kwh/km" />
+                </div>
+                <div class="form-elements">
+                    <label for="userDestination">Enter Your Destination:</label>
+                    <input type="text" name="userDestination" id="userDestination" value="(8.5, 6.9)" placeholder="(8.5, 6.9)" />
+                </div>
+                <button type="submit" class="findCS">Find Optimal Charging Station</button>
+                
+            </form>
+
+        </div>
+        <div class="board ">
+            <!-- grid cells -->
+            <canvas id="canvas" width="600" height="600"></canvas>
+        </div>
+        <!-- <div class="footer">Under the guidance of <strong>Dr. Manish Chaturvedi</strong>.</div> -->
+    </div>
+    
+    <script src="script.js">
+    </script>
+</body>
+</html>
